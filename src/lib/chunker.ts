@@ -3,7 +3,7 @@ export interface TextChunk {
     index: number;
 }
 
-export function chuckText(
+export function chunkText(
     text: string,
     chunkSize: number = 1000,
     overlap: number = 200
