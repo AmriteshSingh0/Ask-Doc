@@ -8,7 +8,9 @@ export interface VectorEntry {
     source: string;
 }
 
-const STORE_PATH = path.join(process.cwd(), "vector-store.json")
+export const STORE_PATH = process.env.VERCEL || process.env.NODE_ENV === "production"
+    ? path.join("/tmp", "vector-store.json")
+    : path.join(process.cwd(), "vector-store.json");
 
 function loadStore(): VectorEntry[] {
     if (!fs.existsSync(STORE_PATH)) return [];

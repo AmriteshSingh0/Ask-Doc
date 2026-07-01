@@ -1,10 +1,13 @@
-export async function parsePDF(filebuffer: Buffer): Promise<string> {
-    const pdfParse = require("pdf-parse");
+export async function parsePDF(fileBuffer: Buffer): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pdfParse = require("pdf-parse");
 
+  const fn = typeof pdfParse === "function" ? pdfParse : pdfParse.default;
+  const data = await fn(fileBuffer);
 
-    const data = await pdfParse(filebuffer);
+  const cleanText = data.text
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
-    const cleanText = data.text.replace(/\n{3,}/g, "\n\n").trim();
-
-    return cleanText;
+  return cleanText;
 }
