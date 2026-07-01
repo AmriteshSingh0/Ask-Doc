@@ -26,30 +26,32 @@ const MAX_FILE_SIZE_MB = 5;
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>([]);
+  const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>(() => {
+    if (typeof window === "undefined") return [];
+    const saved = localStorage.getItem("amd_docs");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [question, setQuestion] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [isAsking, setIsAsking] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadCount, setUploadCount] = useState(0);
-  const [questionCount, setQuestionCount] = useState(0);
+  const [uploadCount, setUploadCount] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    return parseInt(localStorage.getItem("amd_uploads") || "0");
+  });
+  const [questionCount, setQuestionCount] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    return parseInt(localStorage.getItem("amd_questions") || "0");
+  });
   const [limitError, setLimitError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // On mount: restore state from localStorage, auto-clear if no docs
+  // On mount: if no saved docs, wipe the vector store for a clean start
   useEffect(() => {
-    const u = parseInt(localStorage.getItem("amd_uploads") || "0");
-    const q = parseInt(localStorage.getItem("amd_questions") || "0");
-    setUploadCount(u);
-    setQuestionCount(q);
-
     const savedDocs = localStorage.getItem("amd_docs");
-    if (savedDocs) {
-      setUploadedDocs(JSON.parse(savedDocs));
-    } else {
-      // No docs in localStorage = fresh session, wipe the vector store
-      fetch("/api/clear", { method: "DELETE" }).catch(() => {});
+    if (!savedDocs) {
+      fetch("/api/clear", { method: "DELETE" }).catch(() => { });
     }
   }, []);
 
